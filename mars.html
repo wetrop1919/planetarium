@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8" />
-<title>3D Planet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Марс — 3D модель</title>
 
 <script type="importmap">
 {
@@ -11,7 +12,6 @@
   }
 }
 </script>
-
 
 <style>
   body {
@@ -25,7 +25,6 @@
 
   #scene {
     flex: 1;
-    overflow: hidden;
   }
 
   #info {
@@ -56,6 +55,21 @@
     color: #aaa;
     width: 55%;
   }
+
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+    }
+
+    #info {
+      width: 100%;
+      height: 40vh;
+    }
+
+    #scene {
+      height: 60vh;
+    }
+  }
 </style>
 </head>
 
@@ -64,18 +78,18 @@
 <div id="scene"></div>
 
 <div id="info">
-  <h2>Марс</h2>
-  <table>
-    <tr><td>Масса</td><td>6,4×10²³ кг (0,107 массы Земли)</td></tr>
-    <tr><td>Диаметр</td><td>6670 км (0,53 диаметра Земли)</td></tr>
-    <tr><td>Плотность</td><td>3,95 г/см³</td></tr>
-    <tr><td>Температура</td><td>-23°C (основная), -150°C (полюса), 0°C (экватор)</td></tr>
-    <tr><td>Длина суток</td><td>24,6229 часа</td></tr>
-    <tr><td>Среднее расстояние</td><td>1,5237 а.е. (228 млн км)</td></tr>
-    <tr><td>Период обращения</td><td>687 суток</td></tr>
-    <tr><td>Орбитальная скорость</td><td>24,1 км/с</td></tr>
-    <tr><td>Ускорение свободного падения</td><td>3,7 м/с²</td></tr>
-  </table>
+<h2>Марс</h2>
+<table>
+<tr><td>Масса</td><td>6,4×10²³ кг</td></tr>
+<tr><td>Диаметр</td><td>6670 км</td></tr>
+<tr><td>Плотность</td><td>3,95 г/см³</td></tr>
+<tr><td>Температура</td><td>-23°C (в среднем)</td></tr>
+<tr><td>Длина суток</td><td>24,6 часа</td></tr>
+<tr><td>Расстояние от Солнца</td><td>228 млн км</td></tr>
+<tr><td>Период обращения</td><td>687 суток</td></tr>
+<tr><td>Скорость по орбите</td><td>24,1 км/с</td></tr>
+<tr><td>g</td><td>3,7 м/с²</td></tr>
+</table>
 </div>
 
 <script type="module">
@@ -85,30 +99,25 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.0/exampl
 const scene = new THREE.Scene();
 
 // Камера
-const camera = new THREE.PerspectiveCamera(
-  75,
-  1,
-  0.1,
-  1000
-);
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
 
 // Рендерер
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const sceneContainer = document.getElementById('scene');
 sceneContainer.appendChild(renderer.domElement);
 
-// Свет (как Солнце)
+// Свет (тёплый, но не жёлтый)
 const sunLight = new THREE.DirectionalLight(0xfcaaaa, 1.2);
 sunLight.position.set(10, 5, 10);
 scene.add(sunLight);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.10));
+scene.add(new THREE.AmbientLight(0xffffff, 0.1));
 
-// Планета
-const geometry = new THREE.SphereGeometry(2, 64, 64);
+// Планета (оптимизированная геометрия)
+const geometry = new THREE.SphereGeometry(2, 32, 32);
 
 const texture = new THREE.TextureLoader().load('textures/mars.jpg');
 
@@ -121,20 +130,23 @@ scene.add(planet);
 
 camera.position.z = 5;
 
-// Управление мышью
+// Управление
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 3;
+controls.maxDistance = 8;
 
-// Звёзды
+// Звёзды (уменьшено для мобильных)
 const starsGeometry = new THREE.BufferGeometry();
-const starsCount = 1000;
+const starsCount = 400;
 const positions = [];
 
 for (let i = 0; i < starsCount; i++) {
   positions.push(
-    (Math.random() - 0.5) * 2000,
-    (Math.random() - 0.5) * 2000,
-    (Math.random() - 0.5) * 2000
+    (Math.random() - 0.5) * 1500,
+    (Math.random() - 0.5) * 1500,
+    (Math.random() - 0.5) * 1500
   );
 }
 

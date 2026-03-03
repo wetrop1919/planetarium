@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>3D Planet</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.module.js"
+  }
+}
+</script>
+
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Контейнер для всего */
+  #container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* 3D сцена */
+  #scene-container {
+    flex: 1;
+  }
+
+  /* Правая панель */
+  #info-panel {
+    width: 320px;
+    background: rgba(20, 20, 20, 0.9);
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    border-left: 1px solid rgba(255,255,255,0.1);
+  }
+
+  #info-panel h2 {
+    margin-top: 0;
+    color: #ff6a00;
+  }
+
+  #info-panel p {
+    line-height: 1.5;
+    font-size: 14px;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="container">
+  <div id="scene-container"></div>
+
+  <div id="info-panel">
+    <h2>Марс</h2>
+    <p><b>Масса:</b> 6,4*1023кг. (0,107 массы Земли)</p>
+    <p><b>Диаметр:</b> 6670 км. (0,53 диаметра Земли)</p>
+    <p><b>Плотность:</b> 3,95 г/см3</p>
+    <p><b>Температура поверхности:</b> -23oC на большей части поверхности, -150oC на полюсах,0oC на экваторе</p>
+	<p><b>Длина суток:</b> 	24,6229 часа</p>
+	<p><b>Расстояние от Cолнца(среднее):</b> 1,5237 а.е.,то есть 228 млн.км.</p>
+	<p><b>Период обращения по орбите(год):</b> 687 земных суток</p>
+	<p><b>Скорость вращения по орбите:</b> 24,1 км/c)</p>
+	<p><b>Ускорение свободного падения:	</b> 3,7 м/c2</p>
+    <p>
+      Марс — четвёртая планета от Солнца, часто называемая
+      «красной планетой» из-за оксида железа на поверхности.
+    </p>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from
+  'https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+
+/* Камера */
+const camera = new THREE.PerspectiveCamera(
+  75,
+  (window.innerWidth - 320) / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.z = 5;
+
+/* Рендер */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth - 320, window.innerHeight);
+document.getElementById('scene-container').appendChild(renderer.domElement);
+
+/* Свет */
+const light = new THREE.DirectionalLight(0xffffff, 1.2);
+light.position.set(5, 3, 5);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+
+/* Планета */
+const geometry = new THREE.SphereGeometry(2, 64, 64);
+const textureLoader = new THREE.TextureLoader();
+const texture = textureLoader.load('textures/mars.jpg');
+
+const material = new THREE.MeshStandardMaterial({ map: texture });
+const planet = new THREE.Mesh(geometry, material);
+scene.add(planet);
+
+/* Управление */
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+/* Анимация */
+function animate() {
+  requestAnimationFrame(animate);
+  planet.rotation.y += 0.001; // медленное вращение
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+/* Resize */
+window.addEventListener('resize', () => {
+  const width = window.innerWidth - 320;
+  const height = window.innerHeight;
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>3D Planet</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.module.js"
+  }
+}
+</script>
+
+
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background: black;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+
+  #scene {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  #info {
+    width: 380px;
+    padding: 20px;
+    background: #111;
+    overflow-y: auto;
+  }
+
+  h2 {
+    margin-top: 0;
+	color: #ff6a00;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #333;
+    vertical-align: top;
+  }
+
+  td:first-child {
+    color: #aaa;
+    width: 55%;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="info">
+  <h2>Марс</h2>
+  <table>
+    <tr><td>Масса</td><td>6,4×10²³ кг (0,107 массы Земли)</td></tr>
+    <tr><td>Диаметр</td><td>6670 км (0,53 диаметра Земли)</td></tr>
+    <tr><td>Плотность</td><td>3,95 г/см³</td></tr>
+    <tr><td>Температура</td><td>-23°C (основная), -150°C (полюса), 0°C (экватор)</td></tr>
+    <tr><td>Длина суток</td><td>24,6229 часа</td></tr>
+    <tr><td>Среднее расстояние</td><td>1,5237 а.е. (228 млн км)</td></tr>
+    <tr><td>Период обращения</td><td>687 суток</td></tr>
+    <tr><td>Орбитальная скорость</td><td>24,1 км/с</td></tr>
+    <tr><td>Ускорение свободного падения</td><td>3,7 м/с²</td></tr>
+  </table>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+
+// Камера
+const camera = new THREE.PerspectiveCamera(
+  75,
+  1,
+  0.1,
+  1000
+);
+
+// Рендерер
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const sceneContainer = document.getElementById('scene');
+sceneContainer.appendChild(renderer.domElement);
+
+// Свет (как Солнце)
+const sunLight = new THREE.DirectionalLight(0xfcaaaa, 1.2);
+sunLight.position.set(10, 5, 10);
+scene.add(sunLight);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.10));
+
+// Планета
+const geometry = new THREE.SphereGeometry(2, 64, 64);
+
+const texture = new THREE.TextureLoader().load('textures/mars.jpg');
+
+const material = new THREE.MeshStandardMaterial({
+  map: texture
+});
+
+const planet = new THREE.Mesh(geometry, material);
+scene.add(planet);
+
+camera.position.z = 5;
+
+// Управление мышью
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Звёзды
+const starsGeometry = new THREE.BufferGeometry();
+const starsCount = 1000;
+const positions = [];
+
+for (let i = 0; i < starsCount; i++) {
+  positions.push(
+    (Math.random() - 0.5) * 2000,
+    (Math.random() - 0.5) * 2000,
+    (Math.random() - 0.5) * 2000
+  );
+}
+
+starsGeometry.setAttribute(
+  'position',
+  new THREE.Float32BufferAttribute(positions, 3)
+);
+
+const starsMaterial = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 1
+});
+
+scene.add(new THREE.Points(starsGeometry, starsMaterial));
+
+// Анимация
+function animate() {
+  requestAnimationFrame(animate);
+
+  planet.rotation.y += 0.001;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Resize
+function onResize() {
+  const width = sceneContainer.clientWidth;
+  const height = sceneContainer.clientHeight;
+
+  renderer.setSize(width, height);
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+window.addEventListener('resize', onResize);
+onResize();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Сатурн — 3D модель</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.module.js"
+  }
+}
+</script>
+
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background: black;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+
+  #scene { flex: 1; }
+  #info {
+    width: 380px;
+    padding: 20px;
+    background: #111;
+    overflow-y: auto;
+  }
+  h2 { margin-top: 0; color: #ff6a00; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  h3 {
+    margin-top: 0;
+    color: #ff7f50;
+  }
+  td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #333;
+    vertical-align: top;
+  }
+  td:first-child { color: #aaa; width: 55%; }
+
+  #arrow-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #ff6a00, #ff9a00);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.6);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  #arrow-button:hover {
+    transform: scale(1.15) rotate(20deg);
+    box-shadow: 0 12px 35px rgba(255, 106, 0, 0.8);
+  }
+
+  #more-info {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    max-height: 65vh;
+    background: rgba(17, 17, 17, 0.96);
+    backdrop-filter: blur(12px);
+    color: white;
+    padding: 35px 30px 40px;
+    transform: translateY(100%);
+    transition: transform 0.85s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 999;
+    overflow-y: auto;
+    box-shadow: 0 -15px 40px rgba(0,0,0,0.7);
+    border-top: 5px solid #ff6a00;
+  }
+  #more-info.active { transform: translateY(0); }
+  #more-info h2 { margin: 0 0 20px 0; color: #ff6a00; font-size: 26px; }
+  #more-info p { line-height: 1.6; margin-bottom: 18px; font-size: 15px; }
+  #more-info ul { padding-left: 8px; margin: 20px 0; }
+  #more-info li {
+    margin-bottom: 14px;
+    padding-left: 22px;
+    position: relative;
+    font-size: 15px;
+  }
+  #more-info li:before {
+    content: "•";
+    color: #ff6a00;
+    font-size: 22px;
+    position: absolute;
+    left: 0;
+    top: -3px;
+  }
+  #close-more {
+    position: absolute;
+    top: 20px; right: 25px;
+    background: none; border: none;
+    color: #ff6a00;
+    font-size: 34px;
+    cursor: pointer;
+  }
+  #close-more:hover { transform: rotate(90deg) scale(1.1); }
+  #more-info .note {
+    font-size: 13px;
+    color: #777;
+    margin-top: 30px;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    #info { width: 100%; height: 40vh; }
+    #scene { height: 60vh; }
+    #arrow-button { bottom: 20px; right: 20px; width: 48px; height: 48px; font-size: 24px; }
+  }
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="info">
+<h2>Сатурн</h2>
+<h3>Обозначения</h3>
+<table>
+<tr><td>Произношение</td><td>/ˈsætərn/ </td></tr>
+<tr><td>Названный в честь</td><td>Сатурн</td></tr>
+<tr><td>Прилагательные</td><td>Сатурниан /səˈtɜːrniən/, Крониан / Kronian /ˈkroʊniən</td></tr>
+<tr><td>Символ</td><td>♄</td></tr>
+</table>
+<h3>Орбитальные характеристики</h3>
+<h3>Эпоха J2000.0</h3>
+<table>
+<tr><td>Афелий</td><td>1 514,50 млн км (10,1238 а. е.)</td></tr>
+<tr><td>Перигелий</td><td>1352,55 млн км (9,0412 а. е.)</td></tr>
+<tr><td>Большая полуось</td><td>1 433,53 миллиона км (9,5826 а. е.)</td></tr>
+<tr><td>Эксцентричность</td><td>0.0565</td></tr>
+<tr><td>Период обращения (звёздный)</td><td>•	29,4475 лет
+•	10 755,70 дней
+•	24 225 сатурнианских солнечных дней
+</td></tr>
+<tr><td>Орбитальный период (синодический)</td><td>378,09 дня</td></tr>
+<tr><td>Средняя орбитальная скорость</td><td>9,68 км/с</td></tr>
+<tr><td>Средняя аномалия</td><td>317.020°</td></tr>
+<tr><td>Склонность</td><td>•	2,485° до эклиптики
+•	5,51° до солнечногоэкватора
+•	0,93° до неподвижной плоскости
+</td></tr>
+<tr><td>Долгота восходящего узла</td><td>113.665°</td></tr>
+<tr><td>Время перигелия</td><td>2032-11-29</td></tr>
+<tr><td>Аргумент перигелия</td><td>339.392°</td></tr>
+<tr><td>Известные спутники</td><td>274 с официальными обозначениями; бесчисленное множество дополнительных лунок.</td></tr>
+</table>
+<h3>Физические характеристики</h3>
+<table>
+<tr><td>Средний радиус</td><td>58232±6 км
+9.1402 Земли
+</td></tr>
+<tr><td>Экваториальный радиус</td><td>•	60268 км 
+•	9,449 Земли
+</td></tr>
+<tr><td>Полярный радиус</td><td>•	54364 км[
+•	8,552 Земли
+</td></tr>
+<tr><td>Сплющивание</td><td>0.09796</td></tr>
+<tr><td>Окружность</td><td>365882.4 км (по экватору) </td></tr>
+<tr><td>Площадь поверхности</td><td>•	4,27×1010 км2 
+•	83,703 Земли
+</td></tr>
+<tr><td>Объем</td><td>•	8,2713×1014 км3
+•	763,59 Земли
+</td></tr>
+<tr><td>Масса</td><td>•	(5,68317±0,00026)×1026 кг
+•	95,159 Земли
+</td></tr>
+<tr><td>Средняя плотность</td><td>0,6871±0,0002 г/см3
+0,1246 Земли
+</td></tr>
+<tr><td>Поверхностная гравитация</td><td>10,44 м/с2
+1,065 g0
+</td></tr>
+<tr><td>Коэффициент момента инерции</td><td>0.22</td></tr>
+<tr><td>Скорость убегания</td><td>35,5 км/с</td></tr>
+<tr><td>Период синодической ротации</td><td>10 ч 32 мин 36 с;
+10,5433 часа, 10 ч 39 мин;
+10,7 часа
+</td></tr>
+<tr><td>Период звездного вращения</td><td>10ч 33м 38с + 1м 52с
+− 1м 19с 
+</td></tr>
+<tr><td>Экваториальная скорость вращения</td><td>9,87 км/с</td></tr>
+<tr><td>Осевой наклон</td><td>26,73° (для орбиты)</td></tr>
+<tr><td>Северный полюс прямое восхождение</td><td>40,589°; 2ч 42м 21с</td></tr>
+<tr><td>Северный полюс склонение</td><td>83.537°</td></tr>
+<tr><td>Альбедо</td><td>•	0,342 (связь) 
+•	0,499 (геометрическая) 
+</td></tr>
+</table>
+</div>
+
+<button id="arrow-button" title="Ещё факты о Сатурне">↑</button>
+
+<div id="more-info">
+  <button id="close-more">✕</button>
+  <h2>Сатурн</h2>
+  <p><strong>Сатурн</strong> — шестая планета по удалённости от <strong>Солнца</strong> и вторая по массе и размерам планета в <strong>Солнечной системе</strong> после <strong>Юпитера</strong>. <strong>Сатурн</strong> классифицируется как газовая планета-гигант. Назван в честь римского бога земледелия. Состоит из водорода с примесями гелия и следами воды, метана, аммиака и тяжёлых элементов. Внутренняя область представляет собой относительно небольшое ядро из железа, никеля и льда, покрытое тонким слоем металлического водорода и газообразным внешним слоем. Внешняя атмосфера планеты кажется из космоса спокойной и однородной, хотя иногда на ней появляются долговременные образования. Скорость ветра на <strong>Сатурне</strong> может достигать <strong>1800 км/ч</strong>, что значительно больше, чем на <strong>Юпитере</strong>. У <strong>Сатурна</strong> имеется планетарное магнитное поле, занимающее промежуточное положение по напряжённости между магнитным полем <strong>Земли</strong> и мощным полем <strong>Юпитера</strong>. Магнитное поле планеты простирается на <strong>106 км</strong> в направлении <strong>Солнца</strong>. <strong>Сатурн</strong> обладает заметной системой колец, состоящей главным образом из частичек льда, меньшего количества тяжёлых элементов и пыли.  Вокруг планеты обращается как минимум <strong>274 спутника</strong>, это наибольшее число открытых спутников среди всех планет <strong>Солнечной системы</strong> <strong>(и даже превышает суммарное количество спутников всех остальных планет вместе взятых)</strong>. <strong>Титан</strong> — самый крупный из них, а также второй по размерам спутник в <strong>Солнечной системе</strong>, который превосходит по своим размерам <strong>Меркурий</strong> и обладает единственной среди спутников планет <strong>Солнечной системы</strong> плотной атмосферой, а также метановыми морями и озёрами. На орбите <strong>Сатурна</strong> находилась автоматическая межпланетная станция <strong>(АМС) «Кассини»</strong>, запущенная в <strong>1997 году</strong> и достигшая системы <strong>Сатурна</strong> в <strong>2004 году</strong>. В задачи <strong>АМС</strong> входило изучение структуры колец, а также динамики атмосферы и магнитосферы планеты. <strong>15 сентября 2017 года</strong> станция завершила свою миссию, сгорев в атмосфере планет</p>
+  <p class="note">Нажми ↑ снова или ✕, чтобы закрыть панель</p>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const sceneContainer = document.getElementById('scene');
+sceneContainer.appendChild(renderer.domElement);
+
+const sunLight = new THREE.DirectionalLight(0xfcaaaa, 1.4);
+sunLight.position.set(8, 3, 12);
+scene.add(sunLight);
+scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+
+// Планета
+const geometry = new THREE.SphereGeometry(2, 64, 64);
+const texture = new THREE.TextureLoader().load('textures/saturn.jpg');
+const material = new THREE.MeshStandardMaterial({ map: texture });
+const planet = new THREE.Mesh(geometry, material);
+scene.add(planet);
+
+// === КОЛЬЦА — ТОЧНО КАК ТЫ ХОЧЕШЬ: ОДНО БОЛЬШОЕ КОЛЬЦО ===
+const ringGeometry = new THREE.RingGeometry(2.65, 4.2, 256); // чуть шире для красоты
+
+const ringTexture = new THREE.TextureLoader().load('textures/2k_saturn_ring_alpha.png');
+
+ringTexture.wrapS = THREE.RepeatWrapping;      // по окружности
+ringTexture.wrapT = THREE.ClampToEdgeWrapping; // по ширине кольца
+ringTexture.repeat.set(1, 1);                  // ← ОДНО РАСТЯЖЕНИЕ ПО ВСЕЙ ОКРУЖНОСТИ
+ringTexture.rotation = 0;                      // без поворота — твоя картинка растягивается именно так, как нужно
+ringTexture.needsUpdate = true;
+
+const ringMaterial = new THREE.MeshBasicMaterial({
+  map: ringTexture,
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: 0.95
+});
+
+const rings = new THREE.Mesh(ringGeometry, ringMaterial);
+rings.rotation.x = Math.PI / 2;
+planet.add(rings);
+
+// Наклон планеты + камера (чтобы кольцо выглядело объёмно)
+planet.rotation.x = 0.35;
+camera.position.set(1.5, 2.8, 7.5);
+
+// Управление
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 4;
+controls.maxDistance = 15;
+
+// Звёзды
+const starsGeometry = new THREE.BufferGeometry();
+const positions = [];
+for (let i = 0; i < 400; i++) {
+  positions.push((Math.random() - 0.5) * 1500, (Math.random() - 0.5) * 1500, (Math.random() - 0.5) * 1500);
+}
+starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+scene.add(new THREE.Points(starsGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 1 })));
+
+// Анимация
+function animate() {
+  requestAnimationFrame(animate);
+  planet.rotation.y += 0.0007;
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+// Resize
+function onResize() {
+  const width = sceneContainer.clientWidth;
+  const height = sceneContainer.clientHeight;
+  renderer.setSize(width, height);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', onResize);
+onResize();
+
+// Стрелка и панель
+const arrowButton = document.getElementById('arrow-button');
+const moreInfoPanel = document.getElementById('more-info');
+const closeButton = document.getElementById('close-more');
+
+arrowButton.addEventListener('click', () => moreInfoPanel.classList.toggle('active'));
+closeButton.addEventListener('click', () => moreInfoPanel.classList.remove('active'));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && moreInfoPanel.classList.contains('active')) moreInfoPanel.classList.remove('active');
+});
+</script>
+
+</body>
+</html>

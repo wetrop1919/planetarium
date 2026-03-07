@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Юпитер — 3D модель</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.module.js"
+  }
+}
+</script>
+
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background: black;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+
+  #scene {
+    flex: 1;
+  }
+
+  #info {
+    width: 380px;
+    padding: 20px;
+    background: #111;
+    overflow-y: auto;
+  }
+
+  h2 {
+    margin-top: 0;
+    color: #ff6a00;
+  }
+  
+  h3 {
+    margin-top: 0;
+    color: #ff7f50;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #333;
+    vertical-align: top;
+  }
+
+  td:first-child {
+    color: #aaa;
+    width: 55%;
+  }
+
+  /* ========== НОВЫЕ СТИЛИ ДЛЯ СТРЕЛКИ И ПАНЕЛИ ========== */
+  #arrow-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #ff6a00, #ff9a00);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.6);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+  }
+
+  #arrow-button:hover {
+    transform: scale(1.15) rotate(20deg);
+    box-shadow: 0 12px 35px rgba(255, 106, 0, 0.8);
+  }
+
+  #more-info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 65vh;
+    background: rgba(17, 17, 17, 0.96);
+    backdrop-filter: blur(12px);
+    color: white;
+    padding: 35px 30px 40px;
+    transform: translateY(100%);
+    transition: transform 0.85s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 999;
+    overflow-y: auto;
+    box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.7);
+    border-top: 5px solid #ff6a00;
+  }
+
+  #more-info.active {
+    transform: translateY(0);
+  }
+
+  #more-info h2 {
+    margin: 0 0 20px 0;
+    color: #ff6a00;
+    font-size: 26px;
+  }
+
+  #more-info p {
+    line-height: 1.6;
+    margin-bottom: 18px;
+    font-size: 15px;
+  }
+
+  #more-info ul {
+    padding-left: 8px;
+    margin: 20px 0;
+  }
+
+  #more-info li {
+    margin-bottom: 14px;
+    padding-left: 22px;
+    position: relative;
+    font-size: 15px;
+  }
+
+  #more-info li:before {
+    content: "•";
+    color: #ff6a00;
+    font-size: 22px;
+    position: absolute;
+    left: 0;
+    top: -3px;
+  }
+
+  #close-more {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    background: none;
+    border: none;
+    color: #ff6a00;
+    font-size: 34px;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.3s ease;
+  }
+
+  #close-more:hover {
+    transform: rotate(90deg) scale(1.1);
+  }
+
+  #more-info .note {
+    font-size: 13px;
+    color: #777;
+    margin-top: 30px;
+    text-align: center;
+  }
+  
+  /* Новый стиль для изображений в панели */
+  #more-info img {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 15px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  }
+
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+    }
+
+    #info {
+      width: 100%;
+      height: 40vh;
+    }
+
+    #scene {
+      height: 60vh;
+    }
+
+    #arrow-button {
+      bottom: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="info">
+<h2>Юпитер</h2>
+<h3>Орбитальные характеристики</h3>
+<table>
+<tr><td>Перигелий</td><td>7,405736⋅10^8 км
+(4,950429 а. e.) 
+</td></tr>
+<tr><td>Афелий</td><td>8,165208⋅10^8 км
+(5,458104 а. e.) 
+</td></tr>
+<tr><td>Большая полуось (a)</td><td>7,785472⋅10^8 км
+(5,204267 а. e.) 
+</td></tr>
+<tr><td>Эксцентриситет орбиты (e)</td><td>0,048775</td></tr>
+<tr><td>Сидерический период обращения</td><td>4332,589 дня (11,8618 года) </td></tr>
+<tr><td>Синодический период обращения</td><td>398,88 дня</td></tr>
+<tr><td>Орбитальная скорость (v)</td><td>13,07 км/с (средн.) </td></tr>
+<tr><td>Наклонение (i)</td><td>1,304° (относительно эклиптики)
+6,09° (относительно солнечного экватора)
+</td></tr>
+<tr><td>Долгота восходящего узла (Ω)</td><td>100,55615°</td></tr>
+<tr><td>Аргумент перицентра (ω)</td><td>275,066°</td></tr>
+<tr><td>Чей спутник</td><td>Солнца</td></tr>
+<tr><td>Спутники</td><td>95</td></tr>
+</table>
+<h3>Физические характеристики</h3>
+<table>
+<tr><td>Полярное сжатие</td><td>0,06487</td></tr>
+<tr><td>Экваториальный радиус</td><td>71 492 ± 4 км</td></tr>
+<tr><td>Полярный радиус</td><td>66 854 ± 10 км</td></tr>
+<tr><td>Средний радиус</td><td>69 911 ± 6 км</td></tr>
+<tr><td>Площадь поверхности (S)</td><td>6,21796⋅10^10 км²
+121,9 земных
+</td></tr>
+<tr><td>Объём (V)</td><td>1,43128⋅10^15 км³
+1321,3 земных
+</td></tr>
+<tr><td>Масса (m)</td><td>1,8986⋅10^27 кг
+317,8 земных
+</td></tr>
+<tr><td>Средняя плотность (ρ)</td><td>1326 кг/м³
+</td></tr>
+<tr><td>Ускорение свободного падения на экваторе (g)</td><td>24,79 м/с² (2,535 g)
+</td></tr>
+<tr><td>Первая космическая скорость (v1)</td><td>42,58 км/с</td></tr>
+<tr><td>Вторая космическая скорость (v2)</td><td>59,5 км/с</td></tr>
+<tr><td>Экваториальная скорость вращения</td><td>12,6 км/с или 45 300 км/ч</td></tr>
+<tr><td>Период вращения (T)</td><td>9,925 часа</td></tr>
+<tr><td>Наклон оси</td><td>3,13°</td></tr>
+<tr><td>Прямое восхождение северного полюса (α)</td><td>17 ч 52 мин 14 с
+268,057°
+</td></tr>
+<tr><td>Склонение северного полюса (δ)</td><td>64,496°</td></tr>
+<tr><td>Альбедо</td><td>0,343 (Бонд) 
+0,52 (геом. альбедо)
+</td></tr>
+<tr><td>Видимая звёздная величина</td><td> от −1,61 до −2,94</td></tr>
+<tr><td>Абсолютная звёздная величина</td><td>−9,4</td></tr>
+<tr><td>Угловой диаметр</td><td>29,8″—50,1″</td></tr>
+</table>
+<h3>Атмосфера</h3>
+<table>
+<tr><td>Атмосферное давление</td><td>20—220 кПа</td></tr>
+<tr><td>Шкала высоты</td><td>27 км</td></tr>
+</table>
+<h3>Состав:</h3>
+<table>
+<tr><td>89,8±2,0 % </td><td>Водород (H2)</td></tr>
+<tr><td>10,2±2,0 % </td><td>Гелий (He)</td></tr>
+<tr><td>~0,3 % </td><td>Метан (CH4)</td></tr>
+<tr><td>~0,026 % </td><td>Аммоний (NH4+)</td></tr>
+<tr><td>~0,003 % </td><td>Дейтерид водорода (HD)</td></tr>
+<tr><td>0,0006 % </td><td>Этан (CH3−CH3)</td></tr>
+<tr><td>0,0004 % </td><td>Вода (H2O)</td></tr>
+</table>
+<h3>Льды</h3>
+<table>
+<tr>Аммоний</tr>
+<tr>Вода</tr>
+<tr>Гидросульфид аммония (NH4SH)</tr>
+</table>
+</div>
+
+<!-- Кнопка-стрелка (в самом низу) -->
+<button id="arrow-button" title="Ещё факты о Юпитере">↑</button>
+
+<!-- Красивая выезжающая панель -->
+<div id="more-info">
+  <button id="close-more">✕</button>
+  
+  <h2>Юпитер</h2>
+  <img src="textures/jupiter1.png" alt="Фотография Юпитера, сделанная 27 июня 2019 года с телескопа «Хаббл»">
+  <p>Фотография Юпитера, сделанная 27 июня 2019 года с телескопа «Хаббл»</p>
+  <img src="textures/jupiter2.png" alt="Вид Юпитера во весь диск в естественном цвете, с отбрасываемой на него тенью от его крупнейшего спутника Ганимеда и Большим красным пятном слева на горизонте">
+  <p>Вид Юпитера во весь диск в естественном цвете, с отбрасываемой на него тенью от его крупнейшего спутника Ганимеда и Большим красным пятном слева на горизонте</p>
+  <img src="textures/jupiter3.png" alt="Фотография Юпитера в инфракрасном диапазоне">
+  <p>Фотография Юпитера в инфракрасном диапазоне</p>
+  <ul>
+	<li><strong>Юпитер</strong> — крупнейшая планета <strong>Солнечной системы</strong>, пятая по удалённости от <strong>Солнца</strong>, астрономический знак <strong>♃</strong>. Относится к группе планет-гигантов. <strong>Юпитер</strong> – четвёртое по яркости светило земного неба (после <strong>Солнца</strong>, <strong>Луны</strong> и <strong>Венеры</strong>), визуальная звёздная величина изменяется от <strong>–1,61</strong> до <strong>–2,94</strong>.</li>
+	<li>Масса <strong>Юпитера</strong> <strong>1,9·10²⁷ кг</strong> (<strong>318 масс Земли</strong>). Большая полуось орбиты <strong>5,204 а. е.</strong> (<strong>0,7785 млрд км</strong>). Орбита наклонена к плоскости эклиптики под углом <strong>1,3°</strong>, эксцентриситет орбиты <strong>0,049</strong>. Сидерический период обращения вокруг <strong>Солнца</strong> <strong>11,86 земного года</strong>, средняя орбитальная скорость <strong>12,6 км/с</strong>. Средний поток солнечного излучения на орбите <strong>Юпитера</strong> <strong>50 Вт/м²</strong> (в <strong>27 раз</strong> меньше, чем на <strong>Земле</strong>). Наклон экватора к орбите <strong>3,13°</strong>. Экваториальный радиус <strong>Юпитера</strong> (по верхней границе облачного слоя) <strong>71 492 ± 4 км</strong> (около <strong>11,2 радиуса Земли</strong>), полярное сжатие около <strong>0,06</strong>. Средняя плотность <strong>1326 кг/м³</strong>. <strong>Юпитер</strong> имеет наименьший среди планет <strong>Солнечной системы</strong> сидерический период вращения вокруг оси; он зависит от широты и составляет у экватора <strong>9 ч 50 мин 30 с</strong>, на средних широтах – <strong>9 ч 55 мин 40 с</strong>. Ускорение свободного падения на экваторе <strong>24,79 м/с²</strong>. Сферическое альбедо <strong>0,50</strong> (по Бонду). На <strong>Юпитер</strong> приходится <strong>71 %</strong> совокупной массы планет <strong>Солнечной системы</strong>. Объём <strong>Юпитера</strong> в <strong>1317 раз</strong> больше земного.</li>
+	<li><strong>Юпитер</strong> излучает в пространство на <strong>60 %</strong> больше энергии, чем получает от <strong>Солнца</strong> (эффективная температура планеты превышает равновесное значение). Высокий тепловой поток из недр <strong>Юпитера</strong> образуется как за счёт чрезвычайно медленного (примерно на <strong>2 см в год</strong>) сжатия планеты, так и за счёт запаса тепловой энергии, возникшей при её формировании.</li>
+	<li><strong>Юпитер</strong> обладает протяжённой и сложной атмосферой, в которой наряду с основными составляющими (около <strong>90 % водорода</strong> и около <strong>10 % гелия</strong>) присутствуют аэрозоли, образующие слои облаков на разных уровнях. На видимой облачной поверхности <strong>Юпитера</strong> заметны тёмные пояса и светлые зоны. Выделяют экваториальные, тропические, умеренные и полярные пояса и зоны. Их образование объясняется тем, что в глубине атмосферы возникают нагретые массы газов, создающие циркуляцию атмосферы, аналогичную земной. Предполагают, что светлые зоны отличаются повышенной концентрацией белых кристаллов <strong>аммиака</strong>, а тёмные пояса – красно-коричневых кристаллов <strong>гидросульфида аммония</strong>.</li>
+	<li>Снимок <strong>Юпитера</strong>, на котором виден гигантский атмосферный вихрь, получивший название «<strong>Большое красное пятно Юпитера</strong>». Фото: космический телескоп «<strong>Хаббл</strong>». Процессы, идущие в атмосфере <strong>Юпитера</strong>, имеют высокую интенсивность, наблюдаемые циклоны и молнии – огромную протяжённость. Более <strong>300 лет</strong> астрономы наблюдают гигантский вихрь – <strong>Большое красное пятно</strong>, уникальный долгоживущий циклон, потоки в котором совершают полный оборот вокруг центра за <strong>6 сут.</strong> Ныне его размеры составляют <strong>15 × 30 тыс. км</strong>, <strong>100 лет</strong> назад оно было вдвое больше.</li>
+	<li>Температура у поверхности <strong>Юпитера</strong> (на уровне, примерно соответствующем давлению у поверхности <strong>Земли</strong>, – около <strong>100 кПа</strong>) составляет около <strong>143 К</strong>. При движении в глубь атмосферы температура растёт, достигая <strong>426 К</strong> на глубине <strong>146 км</strong> (по данным космического аппарата «<strong>Галилео</strong>»), где давление составляет <strong>2,2 МПа</strong>.</li>
+  </ul>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+
+// Камера
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+// Рендерер
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const sceneContainer = document.getElementById('scene');
+sceneContainer.appendChild(renderer.domElement);
+
+// Свет (тёплый, но не жёлтый)
+const sunLight = new THREE.DirectionalLight(0xfffdfa, 1.2);
+sunLight.position.set(10, 5, 10);
+scene.add(sunLight);
+
+scene.add(new THREE.AmbientLight(0xfca112, 0.1));
+
+// Планета (оптимизированная геометрия)
+const geometry = new THREE.SphereGeometry(2, 32, 32);
+
+const texture = new THREE.TextureLoader().load('textures/jupiter.jpg');
+
+const material = new THREE.MeshStandardMaterial({
+  map: texture
+});
+
+const planet = new THREE.Mesh(geometry, material);
+scene.add(planet);
+
+camera.position.z = 5;
+
+// Управление
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 3;
+controls.maxDistance = 8;
+
+// Звёзды (уменьшено для мобильных)
+const starsGeometry = new THREE.BufferGeometry();
+const starsCount = 400;
+const positions = [];
+
+for (let i = 0; i < starsCount; i++) {
+  positions.push(
+    (Math.random() - 0.5) * 1500,
+    (Math.random() - 0.5) * 1500,
+    (Math.random() - 0.5) * 1500
+  );
+}
+
+starsGeometry.setAttribute(
+  'position',
+  new THREE.Float32BufferAttribute(positions, 3)
+);
+
+const starsMaterial = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 1
+});
+
+scene.add(new THREE.Points(starsGeometry, starsMaterial));
+
+// Анимация
+function animate() {
+  requestAnimationFrame(animate);
+
+  planet.rotation.y += 0.0009;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Resize
+function onResize() {
+  const width = sceneContainer.clientWidth;
+  const height = sceneContainer.clientHeight;
+
+  renderer.setSize(width, height);
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+window.addEventListener('resize', onResize);
+onResize();
+
+// ========== НОВАЯ ФУНКЦИОНАЛЬНОСТЬ: СТРЕЛКА И ПАНЕЛЬ ==========
+const arrowButton = document.getElementById('arrow-button');
+const moreInfoPanel = document.getElementById('more-info');
+const closeButton = document.getElementById('close-more');
+
+arrowButton.addEventListener('click', () => {
+  moreInfoPanel.classList.toggle('active');
+});
+
+closeButton.addEventListener('click', () => {
+  moreInfoPanel.classList.remove('active');
+});
+
+// Закрытие по нажатию ESC (удобно)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && moreInfoPanel.classList.contains('active')) {
+    moreInfoPanel.classList.remove('active');
+  }
+});
+</script>
+
+</body>
+</html>

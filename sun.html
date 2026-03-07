@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Солнце — 3D модель</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/"
+  }
+}
+</script>
+
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background: black;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+
+  #scene { flex: 1; }
+  #info {
+    width: 380px;
+    padding: 20px;
+    background: #111;
+    overflow-y: auto;
+  }
+  h2 { margin-top: 0; color: #ffcc66; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  h3 { margin-top: 0; color: #ff9933; }
+  td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #333;
+    vertical-align: top;
+  }
+  td:first-child { color: #aaa; width: 55%; }
+
+  #arrow-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #ffcc66, #ff9933);
+    color: #333;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 204, 102, 0.6);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+  }
+  #arrow-button:hover {
+    transform: scale(1.15) rotate(20deg);
+    box-shadow: 0 12px 35px rgba(255, 204, 102, 0.8);
+  }
+
+  #more-info {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    max-height: 65vh;
+    background: rgba(17, 17, 17, 0.96);
+    backdrop-filter: blur(12px);
+    color: white;
+    padding: 35px 30px 40px;
+    transform: translateY(100%);
+    transition: transform 0.85s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 999;
+    overflow-y: auto;
+    box-shadow: 0 -15px 40px rgba(0,0,0,0.7);
+    border-top: 5px solid #ffcc66;
+  }
+  #more-info.active { transform: translateY(0); }
+  #more-info h2 { margin: 0 0 20px 0; color: #ffcc66; font-size: 26px; }
+  #more-info p { line-height: 1.6; margin-bottom: 18px; font-size: 15px; }
+  #more-info ul { padding-left: 8px; margin: 20px 0; }
+  #more-info li {
+    margin-bottom: 14px;
+    padding-left: 22px;
+    position: relative;
+    font-size: 15px;
+  }
+  #more-info li:before {
+    content: "•";
+    color: #ffcc66;
+    font-size: 22px;
+    position: absolute;
+    left: 0;
+    top: -3px;
+  }
+  #close-more {
+    position: absolute;
+    top: 20px; right: 25px;
+    background: none; border: none;
+    color: #ffcc66;
+    font-size: 34px;
+    cursor: pointer;
+  }
+  #close-more:hover { transform: rotate(90deg) scale(1.1); }
+  #more-info .note {
+    font-size: 13px;
+    color: #777;
+    margin-top: 30px;
+    text-align: center;
+  }
+  
+  #more-info img {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 15px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  }
+
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    #info { width: 100%; height: 40vh; }
+    #scene { height: 60vh; }
+    #arrow-button { bottom: 20px; right: 20px; width: 48px; height: 48px; font-size: 24px; }
+  }
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="info">
+<h2>☀️ Солнце</h2>
+<h3>Основные характеристики</h3>
+<table>
+<tr><td>Среднее расстояние
+от Земли
+</td><td>1,496⋅10^11 м (8,31 световых минут)
+1 а. е.
+</td></tr>
+<tr><td>Средний горизонтальный параллакс</td><td>8,794</td></tr>
+<tr><td>Видимая звёздная величина (V)</td><td>−26,74m</td></tr>
+<tr><td>Абсолютная звёздная величина</td><td>4,83m</td></tr>
+<tr><td>Спектральный класс</td><td>G2V</td></tr>
+</table>
+<h3>Параметры орбиты</h3>
+<table>
+<tr><td>Расстояние
+от центра Галактики
+</td><td>~2,5⋅10^20 м
+(26 000 св. лет)
+</td></tr>
+<tr><td>Расстояние
+от плоскости Галактики
+</td><td>~4,6⋅10^17 м
+(48 св. лет)
+</td></tr>
+<tr><td>Галактический период обращения</td><td>2,25-2,50⋅10^8 лет</td></tr>
+<tr><td>Скорость</td><td>~2,2⋅10^5 м/с
+(на орбите вокруг центра Галактики)
+19,4 км/с(относительно соседних звёзд)
+</td></tr>
+</table>
+<h3>Физические характеристики</h3>
+<table>
+<tr><td>Средний диаметр</td><td>1,392⋅10^9 м
+(109 диаметров Земли) 
+</td></tr>
+<tr><td>Экваториальный радиус</td><td>6,9551⋅10^8 м</td></tr>
+<tr><td>Длина окружности экватора</td><td>4,37001⋅10^9 м</td></tr>
+<tr><td>Полярное сжатие</td><td>9⋅10^−6</td></tr>
+<tr><td>Площадь поверхности</td><td>6,07877⋅10^18 м²
+(11 918 площадей Земли) 
+</td></tr>
+<tr><td>Объём</td><td>1,40927⋅10^27 м³
+(1 301 019 объёмов Земли) 
+</td></tr>
+<tr><td>Масса</td><td>1,9885⋅10^30 кг
+(332 940 масс Земли) 
+</td></tr>
+<tr><td>Средняя плотность</td><td>1,409 г/см³</td></tr>
+<tr><td>Ускорение свободного падения на экваторе</td><td>274,0 м/с² (27,96 g)</td></tr>
+<tr><td>Вторая космическая скорость
+(для поверхности)
+</td><td>617,7 км/с
+(55,2 земных) 
+</td></tr>
+<tr><td>Эффективная температура поверхности</td><td>5780 К</td></tr>
+<tr><td>Температура короны</td><td>~1 500 000 К</td></tr>
+<tr><td>Температура ядра</td><td>~15 700 000 К</td></tr>
+<tr><td>Светимость</td><td>3,828⋅10^26 Вт
+(~3,75⋅10^28 Лм)
+</td></tr>
+<tr><td>Энергетическая яркость</td><td>2,009⋅10^7 Вт/(м²·ср)</td></tr>
+</table>
+<h3>Характеристики вращения</h3>
+<table>
+<tr><td>Наклон оси</td><td>7,25° 
+(относительно плоскости эклиптики)
+67,23°
+(относительно плоскости Галактики)
+</td></tr>
+<tr><td>Прямое восхождение
+северного полюса
+</td><td>286,13°
+(19 ч 4 мин 30 с)
+</td></tr>
+<tr><td>Склонение
+северного полюса
+</td><td>+63,87°</td></tr>
+<tr><td>Сидерический период вращения внешних видимых слоёв
+(на широте 16°)
+</td><td>25,38 дней
+(25 дней 9 ч 7 мин 13 с) 
+</td></tr>
+<tr><td>(на экваторе)</td><td>25,05 дней</td></tr>
+<tr><td>(у полюсов)</td><td>34,3 дней</td></tr>
+<tr><td>Скорость вращения внешних видимых слоёв
+(на экваторе)
+</td><td>7284 км/ч</td></tr>
+</table>
+<h3>Состав фотосферы </h3>
+<table>
+<tr><td>Водород</td><td>73,46 %</td></tr>
+<tr><td>Гелий</td><td>24,85 %</td></tr>
+<tr><td>Кислород</td><td>0,77 %</td></tr>
+<tr><td>Углерод</td><td>0,29 %</td></tr>
+<tr><td>Железо</td><td>0,16 %</td></tr>
+<tr><td>Неон</td><td>0,12 %</td></tr>
+<tr><td>Азот</td><td>0,09 %</td></tr>
+<tr><td>Кремний</td><td>0,07 %</td></tr>
+<tr><td>Магний</td><td>0,05 %</td></tr>
+<tr><td>Сера</td><td>0,04 %</td></tr>
+</table>
+</div>
+
+<button id="arrow-button" title="Ещё факты о Солнце">↑</button>
+
+<div id="more-info">
+  <button id="close-more">✕</button>
+  <h2>☀️ Солнце</h2>
+  <img src="textures/sun1.png" alt="Снимок Солнца в условном цвете, ультрафиолетовый спектр (длина волны 30,4 нм), сделан в 2010 году">
+  <p>Снимок Солнца в условном цвете, ультрафиолетовый спектр (длина волны 30,4 нм), сделан в 2010 году</p>
+  <img src="textures/sun2.png" alt="Снимок солнца в видимом свете с солнечными пятнами и потемнением к краю, сделан в 2013 году">
+  <p>Снимок солнца в видимом свете с солнечными пятнами и потемнением к краю, сделан в 2013 году</p>
+  <img src="textures/sun3.png" alt="Снимок солнца">
+  <ul>
+	<li><strong>Солнце</strong> — звезда в центре <strong>Солнечной системы</strong>. Представляет собой почти идеальную сферу, состоящая из горячей плазмы и магнитных полей. Диаметр равен <strong>1 392 000 км</strong>, что почти в <strong>109 раз</strong> больше, чем у <strong>Земли</strong>, а его масса в <strong>332 946 раз</strong> больше, чем у <strong>Земли</strong>. Масса звезды составляет около <strong>99,86 %</strong> от общей массы <strong>Солнечной системы</strong>. С химической точки зрения около трех четвертей массы <strong>Солнца</strong> составляет <strong>водород</strong>, а остальная часть в основном <strong>гелий</strong>, <strong>1,69 %</strong> массы составляют другие более тяжелые элементы, такие как <strong>кислород</strong>, <strong>углерод</strong>, <strong>неон</strong>, <strong>железо</strong> и другие.</li>
+	<li><strong>Солнце</strong> классифицируется по спектральному классу как <strong>G2V</strong> и часто неофициально описывается как <strong>жёлтый карлик</strong>, потому что его видимое излучение наиболее сильно в желто-зеленой части спектра. Цвет солнца белый, однако, с поверхности <strong>Земли</strong> он обычно кажется жёлтым из-за рассеяния синего света в атмосфере. Температура поверхности составляет около <strong>5778 К</strong> (<strong>5505 °C</strong>). спектральный анализ указывает на то, что <strong>Солнце</strong>, как и большинство звёзд, является частью главной последовательности и высвобождает свою энергию в результате ядерного синтеза ядер <strong>водорода</strong> в <strong>гелий</strong>. Таким образом, в своем ядре <strong>Солнце</strong> каждую секунду преобразует <strong>620 миллионов тонн</strong> <strong>водорода</strong>. Когда-то астрономы считали его маленькой и относительно незначительной звездой, но сегодня считается, что <strong>Солнце</strong> ярче примерно <strong>85 %</strong> звезд в галактике <strong>Млечный Путь</strong>, большинство из которых являются <strong>красными карликами</strong>. Горячая корона <strong>Солнца</strong> постоянно расширяется в космос, создавая <strong>солнечный ветер</strong>, поток заряженных частиц, достигающий <strong>гелиопаузы</strong> на расстоянии почти <strong>100 а. е.</strong> Область межзвездной среды, образованная <strong>солнечным ветром</strong>, называется <strong>гелиосферой</strong> и является крупнейшей сплошной структурой в <strong>Солнечной системе</strong>.</li>
+	<li><strong>Солнце</strong> движется через <strong>Местное межзвездное облако</strong> в области <strong>Местного пузыря</strong>, являющейся частью внутреннего края <strong>Рукава Ориона</strong> галактики <strong>Млечный Путь</strong>. Среди <strong>50 ближайших звёздных систем</strong> в пределах <strong>17 световых лет</strong> от <strong>Земли</strong> <strong>Солнце</strong> занимает четвёртое место по массивности. Оно вращается вокруг галактического центра <strong>Млечного Пути</strong> на расстоянии от <strong>24 000 до 26 000 световых лет</strong>, совершая один оборот по часовой стрелке, если смотреть с галактического северного полюса, примерно за <strong>225—250 миллионов лет</strong>.</li>
+  </ul>
+  <p class="note">Нажми ↑ снова или ✕, чтобы закрыть панель</p>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const scene = new THREE.Scene();
+
+// Камера
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+// Рендерер
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.toneMappingExposure = 1.5;
+
+const sceneContainer = document.getElementById('scene');
+sceneContainer.appendChild(renderer.domElement);
+
+// 🌟 СОЛНЦЕ с текстурой из папки textures (УВЕЛИЧЕНО до 7)
+const geometry = new THREE.SphereGeometry(7, 64, 64);
+
+// Загружаем текстуру Солнца
+const textureLoader = new THREE.TextureLoader();
+const sunTexture = textureLoader.load('textures/sun.jpg');
+
+// 🔥 Материал с МАКСИМАЛЬНЫМ свечением
+const material = new THREE.MeshBasicMaterial({
+  map: sunTexture,
+  color: 0xffffff,
+  toneMapped: false,
+  // Добавьте эту строку:
+  blendSrc: THREE.SrcAlphaFactor,
+  blendDst: THREE.OneFactor,
+  blendEquation: THREE.AddEquation
+});
+
+const planet = new THREE.Mesh(geometry, material);
+scene.add(planet);
+
+// 🔥 ИСТОЧНИК СВЕТА из центра Солнца (очень мощный)
+const sunLight = new THREE.PointLight(0xffeebb, 8, 400, 0.8);
+sunLight.position.set(0, 0, 0);
+scene.add(sunLight);
+
+// 🔥 ДОПОЛНИТЕЛЬНЫЙ свет для яркости
+const sunLight2 = new THREE.PointLight(0xffaa00, 5, 350, 1);
+sunLight2.position.set(0, 0, 0);
+scene.add(sunLight2);
+
+// 🌟 Эффект короны/атмосферы (несколько слоёв для объёма) - АДАПТИРОВАНО ПОД РАДИУС 7
+const coronaLayers = [];
+const coronaColors = [0xff6600, 0xffaa00, 0xffdd44];
+const coronaOpacities = [0.25, 0.15, 0.08];
+const coronaSizes = [8.0, 9.0, 10.5];  // АДАПТИРОВАНО (пропорционально радиусу 7)
+
+for (let i = 0; i < 3; i++) {
+  const coronaGeometry = new THREE.SphereGeometry(coronaSizes[i], 32, 32);
+  const coronaMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      color: { value: new THREE.Color(coronaColors[i]) },
+      opacity: { value: coronaOpacities[i] },
+      time: { value: 0 }
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 color;
+      uniform float opacity;
+      varying vec3 vNormal;
+      void main() {
+        float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+        gl_FragColor = vec4(color, opacity * intensity);
+      }
+    `,
+    transparent: true,
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const corona = new THREE.Mesh(coronaGeometry, coronaMaterial);
+  coronaLayers.push(corona);
+  scene.add(corona);
+}
+
+// ✨ ЛУЧИ СВЕТА (распределены по всей сфере) - АДАПТИРОВАНО ПОД РАДИУС 7
+const rayCount = 128;
+const rayGeometry = new THREE.BoxGeometry(0.08, 1.2, 0.02);  // УВЕЛИЧЕНА ДЛИНА (пропорционально)
+
+// Создаём градиентную текстуру для лучей
+const rayCanvas = document.createElement('canvas');
+rayCanvas.width = 64;
+rayCanvas.height = 256;
+const rayCtx = rayCanvas.getContext('2d');
+const rayGradient = rayCtx.createLinearGradient(0, 0, 0, 256);
+rayGradient.addColorStop(0, 'rgba(255, 100, 50, 1)');      // Ярко-красный в центре
+rayGradient.addColorStop(0.3, 'rgba(255, 60, 30, 0.9)');   // Насыщенный красный
+rayGradient.addColorStop(0.6, 'rgba(255, 40, 20, 0.6)');   // Тёмно-красный
+rayGradient.addColorStop(1, 'rgba(200, 20, 10, 0)');
+rayCtx.fillStyle = rayGradient;
+rayCtx.fillRect(0, 0, 64, 256);
+const rayTexture = new THREE.CanvasTexture(rayCanvas);
+
+const rayMaterial = new THREE.MeshBasicMaterial({
+  map: rayTexture,
+  transparent: true,
+  opacity: 0.5,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  side: THREE.DoubleSide
+});
+
+const rays = [];
+// Распределяем лучи равномерно по сфере (сферические координаты)
+const phi = Math.PI * (3 - Math.sqrt(5));  // Золотой угол
+
+for (let i = 0; i < rayCount; i++) {
+  const ray = new THREE.Mesh(rayGeometry, rayMaterial.clone());
+  
+  // Сферическое распределение (равномерно по всей поверхности)
+  const y = 1 - (i / (rayCount - 1)) * 2;  // y от 1 до -1
+  const radius = Math.sqrt(1 - y * y);
+  const theta = phi * i;
+  
+  const x = Math.cos(theta) * radius;
+  const z = Math.sin(theta) * radius;
+  
+  const distance = 6.7;  // ЧУТЬ ВНУТРИ солнца чтобы выступали (радиус 7 - 0.3)
+  ray.position.set(x * distance, y * distance, z * distance);
+  
+  // Поворачиваем луч от центра наружу
+  ray.lookAt(new THREE.Vector3(0, 0, 0));
+  ray.rotateX(Math.PI / 2);
+  
+  ray.userData = { baseAngle: 0 };
+  
+  rays.push(ray);
+  scene.add(ray);
+}
+
+// 🌟 Внешнее свечение (Glow Sprite) - АДАПТИРОВАНО ПОД РАДИУС 7
+const glowCanvas = document.createElement('canvas');
+glowCanvas.width = 128;
+glowCanvas.height = 128;
+const glowCtx = glowCanvas.getContext('2d');
+const glowGradient = glowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+glowGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+glowGradient.addColorStop(0.2, 'rgba(255, 220, 150, 0.8)');
+glowGradient.addColorStop(0.5, 'rgba(255, 180, 80, 0.4)');
+glowGradient.addColorStop(0.8, 'rgba(255, 120, 40, 0.1)');
+glowGradient.addColorStop(1, 'rgba(255, 80, 0, 0)');
+glowCtx.fillStyle = glowGradient;
+glowCtx.fillRect(0, 0, 128, 128);
+const glowTexture = new THREE.CanvasTexture(glowCanvas);
+
+const glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: glowTexture,
+  color: 0xffaa00,
+  transparent: true,
+  opacity: 1,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+}));
+glowSprite.scale.set(14, 14, 1);  // АДАПТИРОВАНО (пропорционально радиусу 7)
+scene.add(glowSprite);
+
+// 🌟 Второе внешнее свечение (ещё больше) - АДАПТИРОВАНО ПОД РАДИУС 7
+const glowSprite2 = new THREE.Sprite(new THREE.SpriteMaterial({
+  map: glowTexture,
+  color: 0xff6600,
+  transparent: true,
+  opacity: 0.6,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+}));
+glowSprite2.scale.set(21, 21, 1);  // АДАПТИРОВАНО (пропорционально радиусу 7)
+scene.add(glowSprite2);
+
+camera.position.z = 11;  // АДАПТИРОВАНО (отодвинул камеру для большего Солнца)
+
+// Управление
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 12;  // АДАПТИРОВАНО
+controls.maxDistance = 35;  // АДАПТИРОВАНО
+
+// 🌌 Звёзды (фон)
+const starsGeometry = new THREE.BufferGeometry();
+const starsCount = 1000;
+const positions = [];
+
+for (let i = 0; i < starsCount; i++) {
+  positions.push(
+    (Math.random() - 0.5) * 2000,
+    (Math.random() - 0.5) * 2000,
+    (Math.random() - 0.5) * 2000
+  );
+}
+
+starsGeometry.setAttribute(
+  'position',
+  new THREE.Float32BufferAttribute(positions, 3)
+);
+
+const starsMaterial = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 1.5,
+  sizeAttenuation: true
+});
+
+scene.add(new THREE.Points(starsGeometry, starsMaterial));
+
+// ✨ POST-PROCESSING: BLOOM эффект для РЕАЛЬНОГО свечения
+const renderScene = new RenderPass(scene, camera);
+
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  1.5,  // strength (сила свечения)
+  0.4,  // radius (радиус размытия)
+  0.85  // threshold (порог яркости)
+);
+
+// Настройки для МАКСИМАЛЬНОГО свечения
+bloomPass.strength = 4.5;
+bloomPass.radius = 1.5;
+bloomPass.threshold = 0.1;
+
+const composer = new EffectComposer(renderer);
+composer.addPass(renderScene);
+composer.addPass(bloomPass);
+
+// Анимация
+let time = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.01;
+
+  // Солнце вращается медленно
+  planet.rotation.y += 0.0003;
+  
+  // Анимация короны (пульсация)
+  coronaLayers.forEach((corona, i) => {
+    corona.material.uniforms.time.value = time;
+    corona.rotation.y += 0.0002 * (i + 1);
+    corona.scale.setScalar(1 + Math.sin(time * (i + 1) * 0.5) * 0.03);
+  });
+  
+  // Анимация лучей (мерцание)
+  rays.forEach((ray, i) => {
+    ray.material.opacity = 0.4 + Math.sin(time * 3 + i * 0.5) * 0.2;
+    ray.scale.y = 2.5 + Math.sin(time * 2 + i * 0.3) * 0.3;
+  });
+  
+  // Пульсация внешнего свечения
+  glowSprite.scale.setScalar(14 + Math.sin(time * 2) * 0.5);
+  glowSprite2.scale.setScalar(21 + Math.sin(time * 1.5) * 0.7);
+
+  controls.update();
+  
+  // Используем composer вместо renderer для bloom эффекта
+  composer.render();
+}
+
+animate();
+
+// Resize
+function onResize() {
+  const width = sceneContainer.clientWidth;
+  const height = sceneContainer.clientHeight;
+
+  renderer.setSize(width, height);
+  composer.setSize(width, height);
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+window.addEventListener('resize', onResize);
+onResize();
+
+// Панель с информацией
+const arrowButton = document.getElementById('arrow-button');
+const moreInfoPanel = document.getElementById('more-info');
+const closeButton = document.getElementById('close-more');
+
+arrowButton.addEventListener('click', () => {
+  moreInfoPanel.classList.toggle('active');
+});
+
+closeButton.addEventListener('click', () => {
+  moreInfoPanel.classList.remove('active');
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && moreInfoPanel.classList.contains('active')) {
+    moreInfoPanel.classList.remove('active');
+  }
+});
+</script>
+
+</body>
+</html>

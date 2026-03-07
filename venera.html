@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Венера — 3D модель</title>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.152.0/build/three.module.js"
+  }
+}
+</script>
+
+<style>
+  body {
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background: black;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
+
+  #scene { flex: 1; }
+  #info {
+    width: 380px;
+    padding: 20px;
+    background: #111;
+    overflow-y: auto;
+  }
+  h2 { margin-top: 0; color: #ff6a00; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  h3 {
+    margin-top: 0;
+    color: #ff7f50;
+  }
+  td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #333;
+    vertical-align: top;
+  }
+  td:first-child { color: #aaa; width: 55%; }
+
+  #arrow-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #ff6a00, #ff9a00);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 106, 0, 0.6);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  #arrow-button:hover {
+    transform: scale(1.15) rotate(20deg);
+    box-shadow: 0 12px 35px rgba(255, 106, 0, 0.8);
+  }
+
+  #more-info {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    max-height: 65vh;
+    background: rgba(17, 17, 17, 0.96);
+    backdrop-filter: blur(12px);
+    color: white;
+    padding: 35px 30px 40px;
+    transform: translateY(100%);
+    transition: transform 0.85s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 999;
+    overflow-y: auto;
+    box-shadow: 0 -15px 40px rgba(0,0,0,0.7);
+    border-top: 5px solid #ff6a00;
+  }
+  #more-info.active { transform: translateY(0); }
+  #more-info h2 { margin: 0 0 20px 0; color: #ff6a00; font-size: 26px; }
+  #more-info p { line-height: 1.6; margin-bottom: 18px; font-size: 15px; }
+  #more-info ul { padding-left: 8px; margin: 20px 0; }
+  #more-info li {
+    margin-bottom: 14px;
+    padding-left: 22px;
+    position: relative;
+    font-size: 15px;
+  }
+  #more-info li:before {
+    content: "•";
+    color: #ff6a00;
+    font-size: 22px;
+    position: absolute;
+    left: 0;
+    top: -3px;
+  }
+  #close-more {
+    position: absolute;
+    top: 20px; right: 25px;
+    background: none; border: none;
+    color: #ff6a00;
+    font-size: 34px;
+    cursor: pointer;
+  }
+  #close-more:hover { transform: rotate(90deg) scale(1.1); }
+  #more-info .note {
+    font-size: 13px;
+    color: #777;
+    margin-top: 30px;
+    text-align: center;
+  }
+  
+  /* Новый стиль для изображений в панели */
+  #more-info img {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 15px auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  }
+
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    #info { width: 100%; height: 40vh; }
+    #scene { height: 60vh; }
+    #arrow-button { bottom: 20px; right: 20px; width: 48px; height: 48px; font-size: 24px; }
+  }
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="info">
+<h2>Венера</h2>
+<h3>Орбитальные характеристики</h3>
+<h3>Эпоха J2000.0</h3>
+<table>
+<tr><td>Перигелий</td><td>107 476 259 км
+0,71843270 а.е.
+</td></tr>
+<tr><td>Афелий</td><td>108 942 109 км
+0,72823128 а.е.
+</td></tr>
+<tr><td>Большая полуось (a)</td><td>108 208 930 км
+0,723332 а.е.
+</td></tr>
+<tr><td>Эксцентриситет орбиты (e)</td><td>0,0068</td></tr>
+<tr><td>Сидерический период обращения</td><td>224,701 сут</td></tr>
+<tr><td>Синодический период обращения</td><td>583,92 сут</td></tr>
+<tr><td>Орбитальная скорость (v)</td><td>35,02 км/с</td></tr>
+<tr><td>Наклонение (i)</td><td>3,86° (относительно солнечного экватора);
+3,39458° (относительно эклиптики);
+2,5° (относительно инвариантной плоскости)
+</td></tr>
+<tr><td>Долгота восходящего узла (Ω)</td><td>76,67069°</td></tr>
+<tr><td>Аргумент перицентра (ω)</td><td>54,85229°</td></tr>
+<tr><td>Чей спутник</td><td>Солнце</td></tr>
+<tr><td>Спутники</td><td>нет</td></tr>
+</table>
+
+<h3>Физические характеристики</h3>
+<table>
+<tr><td>Средний радиус</td><td>6051,8 ± 1,0 км
+0,9499 земных
+</td></tr>
+<tr><td>Полярное сжатие</td><td>0</td></tr>
+<tr><td>Площадь поверхности (S)</td><td>4,60⋅108 км²
+0,902 земных
+</td></tr>
+<tr><td>Объём (V)</td><td>9,38⋅1011 км³
+0,857 земных
+</td></tr>
+<tr><td>Масса (m)</td><td>4,8675⋅1024 кг
+0,815 земных
+</td></tr>
+<tr><td>Средняя плотность (ρ)</td><td>5,24 г/см³></td></tr>
+<tr><td>Ускорение свободного падения на экваторе (g)</td><td>8,87 м/с²
+0,904 g
+</td></tr>
+<tr><td>Первая космическая скорость (v1)</td><td>7,328 км/с</td></tr>
+<tr><td>Вторая космическая скорость (v2)</td><td>10,363 км/с</td></tr>
+<tr><td>Экваториальная скорость вращения</td><td>6,52 км/ч</td></tr>
+<tr><td>Период вращения (T)</td><td>243,023±0,002 дней</td></tr>
+<tr><td>Наклон оси</td><td>177,36°</td></tr>
+<tr><td>Прямое восхождение северного полюса (α)</td><td>18 ч 11 мин 2 с
+272,76°
+</td></tr>
+<tr><td>Склонение северного полюса (δ)</td><td>67,16°</td></tr>
+<tr><td>Альбедо</td><td>0,67 (геометрическое),
+0,77 (Бонда) 
+</td></tr>
+<tr><td>Видимая звёздная величина</td><td>−4,6</td></tr>
+<tr><td>Угловой диаметр</td><td>9,7"–66,0"</td></tr>
+</table>
+<h3>Температура</h3>
+<table>
+<tr><td>На поверхности</td><td>737 К 
+(464°C)
+</td></tr>
+</table>
+<h3>Атмосфера</h3>
+<table>
+<tr><td>Атмосферное давление</td><td>9,3 МПа (93 бар)</td></tr>
+</table>
+<h3>Состав:</h3>
+<table>
+<tr><td>~96,5 % </td><td>углекислый газ (CO2)</td></tr>
+<tr><td>~3,5 % </td><td>азот (N2)</td></tr>
+<tr><td>0,018 % </td><td>диоксид серы (SO2)</td></tr>
+<tr><td>0,007 % </td><td>аргон (Ar)</td></tr>
+<tr><td>0,003 % </td><td>водяной пар (H2O)</td></tr>
+<tr><td>0,0017 % </td><td>угарный газ (CO)</td></tr>
+<tr><td>0,0012 % </td><td>гелий (He)</td></tr>
+<tr><td>0,0007 % </td><td>неон (Ne)</td></tr>
+<tr>следы хлороводорода (HCl), фтороводорода (HF), криптона (Kr), ксенона (Xe) и др.</tr>
+</table>
+</div>
+
+<button id="arrow-button" title="Ещё факты о Сатурне">↑</button>
+
+<div id="more-info">
+  <button id="close-more">✕</button>
+  <h2>Венера</h2>
+  <img src="textures/venera1.png" alt="Венера в видимом и ультрафиолетовом свете, снимок сделан АМС Маринер-10 7 февраля 1974 года">
+  <p>Венера в видимом и ультрафиолетовом свете, снимок сделан АМС Маринер-10 7 февраля 1974 года</p>
+  <img src="textures/venera2.png" alt="Фотография Венеры в инфракрасном диапазоне">
+  <p>Фотография Венеры в инфракрасном диапазоне</p>
+  
+  <ul>
+	<li><strong>Венера</strong> — вторая планета <strong>Солнечной системы</strong>, очень близкая по размеру и другим физическим характеристикам к <strong>Земле</strong>. Шестая по размеру планета <strong>Солнечной системы</strong>, наряду с <strong>Меркурием</strong>, <strong>Землёй</strong> и <strong>Марсом</strong> принадлежащая к семейству планет земной группы. Из всех планет <strong>Солнечной системы</strong> <strong>Венера</strong> имеет наименьший эксцентриситет орбиты, равный <strong>0,7 %</strong> (её орбита почти идеально круглая). Она делает один оборот вокруг <strong>Солнца</strong> за <strong>224,7 земных дня</strong>. <strong>Венера</strong> не имеет естественных спутников. <strong>Венера</strong> имеет плотную атмосферу, состоящую более чем на <strong>96 %</strong> из углекислого газа. Является самой горячей планетой <strong>Солнечной системы</strong>, средняя температура на её поверхности составляет <strong>462 °C</strong>. Среднее расстояние <strong>Венеры</strong> от <strong>Солнца</strong> — <strong>108 млн км</strong> (<strong>0,723 а. е.</strong>).</li>
+	<li>Поскольку <strong>Венера</strong> ближе к <strong>Солнцу</strong>, чем <strong>Земля</strong>, она всегда наблюдается вблизи него. На <strong>Земле</strong> её можно наблюдать только непосредственно перед восходом солнца и после захода солнца. Обычно это самое яркое небесное тело после <strong>Луны</strong> и <strong>Солнца</strong>. По размерам <strong>Венера</strong> довольно близка к <strong>Земле</strong>. Радиус планеты равен <strong>6051,8 км</strong> (<strong>95 %</strong> земного), масса — <strong>4,87·10²⁴ кг</strong> (<strong>81,5 %</strong> земной), средняя плотность — <strong>5,24 г/см³</strong>. Ускорение свободного падения равно <strong>8,87 м/с²</strong>.</li>
+	<li><strong>Венера</strong> была известна древним вавилонянам (ок. <strong>1600 г. до н. э.</strong>) и, вероятно, была известна в доисторические времена из-за её высокой яркости. Её символ — стилизованное зеркальное отражение богини <strong>Венеры</strong>: круг с маленьким крестом внизу (<strong>♀</strong>).</li>
+	<li><strong>Венера</strong> имеет медленное ретроградное вращение — по часовой стрелке. Это означает, что он вращается с востока на запад, а не с запада на восток, как и большинство других больших планет <strong>Солнечной системы</strong>. Доподлинно неизвестно, почему <strong>Венера</strong> вращается по часовой стрелке.</li>
+	<li>Почти <strong>90 %</strong> поверхности <strong>Венеры</strong> состоит из сравнительно недавно (в геологическом смысле) остывшей базальтовой лавы и очень небольшого количества метеоритных кратеров. Предполагается, что причиной тому являются интенсивные извержения вулканов, практически полностью изменившие поверхность планеты. Внутренняя часть планеты, скорее всего, очень похожа на земную: железное ядро радиусом около <strong>3000 км</strong>, окруженное полурасплавленной каменистой мантией, занимающей большую часть объёма <strong>Венеры</strong>. Результаты гравиметрических измерений, проведенных зондом «<strong>Магеллан</strong>», посетившим планету в <strong>1994 году</strong>, показывают, что толщина коры <strong>Венеры</strong> больше, чем предполагали специалисты. Согласно одной теории, <strong>Венера</strong> не имеет активной тектоники, подобной <strong>Земле</strong>, вместо этого её поверхность периодически затапливается лавой в результате массовых извержений вулканов. Было обнаружено, что возраст самых старых участков поверхности составляет всего около <strong>800 миллионов лет</strong> (менее <strong>1/5</strong> возраста планеты), остальная поверхность значительно моложе (но по большей части не менее <strong>100 миллионов лет</strong>). Недавние исследования также показывают, что в изолированных районах <strong>Венеры</strong> все ещё существует вулканическая активность.</li>
+	<li>Было обнаружено, что внутреннее магнитное поле <strong>Венеры</strong> слабое по сравнению с другими планетами <strong>Солнечной системы</strong>. Этот факт можно объяснить медленным вращением планеты, что делает невозможным циркуляцию жидкого железа в её ядре. В результате солнечный ветер воздействует непосредственно на верхние слои атмосферы. Ученые считают, что когда-то на <strong>Венере</strong> было столько же воды, сколько на <strong>Земле</strong>, но солнечный ветер медленно разлагал молекулы воды на составные элементы (<strong>водород</strong> и <strong>кислород</strong>). Силы тяжести <strong>Венеры</strong> было недостаточно, чтобы удержать лёгкий изотоп водорода, и впоследствии он рассеялся в межпланетное пространство. С другой стороны, более тяжелый <strong>дейтерий</strong> более успешно удерживается гравитацией <strong>Венеры</strong>. Доказательством этого является его повышенная концентрация в верхних слоях атмосферы. Молекулярный кислород, с другой стороны, вступил в реакцию с элементами на поверхности планеты. Из-за нехватки воды камни на <strong>Венере</strong> намного твёрже, чем на <strong>Земле</strong>, что делает возможными более крутые скалы и более высокие горы.</li>
+	<li>Атмосфера <strong>Венеры</strong> состоит в основном из углекислого газа и небольшого количества азота. Давление на поверхности планеты огромно — в <strong>90 раз</strong> выше, чем на уровне поверхности <strong>Земли</strong>, или эквивалентно давлению в земных океанах на глубине около <strong>1 км</strong>. Атмосфера, богатая углекислым газом, вызывает сильный парниковый эффект и повышает температуру поверхности более чем на <strong>460 °C</strong> по сравнению с тем значением, которое было бы, если бы у <strong>Венеры</strong> не было атмосферы.</li>
+  </ul>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.0/examples/jsm/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+
+// Камера
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+// Рендерер
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const sceneContainer = document.getElementById('scene');
+sceneContainer.appendChild(renderer.domElement);
+
+// Свет (тёплый, но не жёлтый)
+const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+sunLight.position.set(10, 5, 10);
+scene.add(sunLight);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.1));
+
+// Планета (оптимизированная геометрия)
+const geometry = new THREE.SphereGeometry(2, 32, 32);
+
+const texture = new THREE.TextureLoader().load('textures/venera.jpg');
+
+const material = new THREE.MeshStandardMaterial({
+  map: texture
+});
+
+const planet = new THREE.Mesh(geometry, material);
+scene.add(planet);
+
+camera.position.z = 5;
+
+// Управление
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.minDistance = 3;
+controls.maxDistance = 8;
+
+// Звёзды (уменьшено для мобильных)
+const starsGeometry = new THREE.BufferGeometry();
+const starsCount = 400;
+const positions = [];
+
+for (let i = 0; i < starsCount; i++) {
+  positions.push(
+    (Math.random() - 0.5) * 1500,
+    (Math.random() - 0.5) * 1500,
+    (Math.random() - 0.5) * 1500
+  );
+}
+
+starsGeometry.setAttribute(
+  'position',
+  new THREE.Float32BufferAttribute(positions, 3)
+);
+
+const starsMaterial = new THREE.PointsMaterial({
+  color: 0xffffff,
+  size: 1
+});
+
+scene.add(new THREE.Points(starsGeometry, starsMaterial));
+
+// Анимация
+function animate() {
+  requestAnimationFrame(animate);
+
+  planet.rotation.y += 0.0009;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Resize
+function onResize() {
+  const width = sceneContainer.clientWidth;
+  const height = sceneContainer.clientHeight;
+
+  renderer.setSize(width, height);
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+window.addEventListener('resize', onResize);
+onResize();
+
+// ========== НОВАЯ ФУНКЦИОНАЛЬНОСТЬ: СТРЕЛКА И ПАНЕЛЬ ==========
+const arrowButton = document.getElementById('arrow-button');
+const moreInfoPanel = document.getElementById('more-info');
+const closeButton = document.getElementById('close-more');
+
+arrowButton.addEventListener('click', () => {
+  moreInfoPanel.classList.toggle('active');
+});
+
+closeButton.addEventListener('click', () => {
+  moreInfoPanel.classList.remove('active');
+});
+
+// Закрытие по нажатию ESC (удобно)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && moreInfoPanel.classList.contains('active')) {
+    moreInfoPanel.classList.remove('active');
+  }
+});
+</script>
+
+</body>
+</html>
